@@ -5,12 +5,16 @@
          (s1 (usocket:socket-stream sock)))
 
     (write-bytes-n s1 '(#x5 #x0))
-    (if (/= (nth 1 (read-bytes-n s1 2)) 0)
-        (return-from connect nil))
+    (if (/= (second (read-bytes-n s1 2)) 0)
+        (progn
+         (usocket:socket-close sock)
+         (return-from connect nil)))
     (write-bytes-n s1 '(#x5 #x1 #x0))
     (write-host-port s1 dst-host dst-port)
-    (if (/= (nth 1 (read-bytes-n s1 10)) 0)
-        (return-from connect nil))
+    (if (/= (second (read-bytes-n s1 10)) 0)
+        (progn
+         (usocket:socket-close socks)
+         (return-from connect nil)))
     sock))
 
 (defun write-host-port (out host port)
@@ -27,8 +31,5 @@
     (write-uint16 out port))))
 
 (defun string-to-octets (s)
-  (if (= (length s) 0)
-      nil
-      (cons
-       (char-code (char s 0))
-       (string-to-octets (subseq s 1)))))
+  (let ((tt (if (vectorp s) 'vector nil)))
+    (map tt #'char-code s)))
