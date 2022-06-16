@@ -15,10 +15,10 @@
   (let ((port (read-uint16 conn))
         (host (read-uint32 conn)))
 
-    ; user
+    ;; user
     (read-null-string conn)
 
-    ; 4a,  ip 0.0.0.x  read hostname
+    ;; 4a,  ip 0.0.0.x  read hostname
     (if (<= host 256)
         (setf host (flexi-streams:octets-to-string (read-null-string conn))))
 
@@ -28,7 +28,7 @@
 
     (let ((out1 (create-connection host port)))
       (unwind-protect
-       (forward conn (usocket:socket-stream out1))
-       (progn
-        (format *standard-output* "close out socket~%")
-        (usocket:socket-close out1))))))
+           (forward conn (usocket:socket-stream out1))
+        (progn
+          (format *standard-output* "close out socket~%")
+          (usocket:socket-close out1))))))

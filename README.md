@@ -24,7 +24,7 @@ test with curl
 
       (asdf:load-system :socks)
       (let ((conn (socks:connect "127.0.0.1" 3458 "192.168.0.1" 80)))
-        ; now conn is a tcp connection to 192.168.0.1:80
-        ; do something with conn 
-        ; ex, send http raw request 
+        ;; now conn is a tcp connection to 192.168.0.1:80
+        ;; do something with conn
+        ;; ex, send http raw request
       (usocket:socket-close conn))

@@ -52,9 +52,9 @@
   (let ((thread (bt:make-thread (lambda ()
                                   (_forward out in)))))
     (unwind-protect
-     (_forward in out)
-     (if (bt:thread-alive-p thread)
-         (bt:destroy-thread thread)))))
+         (_forward in out)
+      (if (bt:thread-alive-p thread)
+          (bt:destroy-thread thread)))))
 
 (defun read-bytes-n (in n)
   (loop for i from 1 to n
@@ -65,7 +65,7 @@
     (map tt #'(lambda (ch) (write-byte ch out)) data)
     (force-output out)))
 
-;(eval-when (:compile-toplevel)
+;;(eval-when (:compile-toplevel)
 (defun handshake (in out)
   (let ((ver (read-version in)))
     (cond ((eq ver 5)
@@ -77,29 +77,35 @@
           (t (format *standard-output* "unsupported version ~a~%" ver)))))
 
 (defun create-connection (host port)
-  (usocket:socket-connect host port :element-type '(unsigned-byte 8) :protocol :stream :nodelay t))
+  (usocket:socket-connect host port
+                          :element-type '(unsigned-byte 8)
+                          :protocol :stream :nodelay t))
 
 (defun listen-for-connection (host port)
-  (let ((sock (usocket:socket-listen host port :reuse-address t :element-type '(unsigned-byte 8))))
-    (values (bt:make-thread (lambda ()
-                              (accept-connection sock)
-                              (format *standard-output* "accept thread ended~%")))
+  (let ((sock (usocket:socket-listen host port
+                                     :reuse-address t
+                                     :element-type '(unsigned-byte 8))))
+    (values (bt:make-thread
+             (lambda ()
+               (accept-connection sock)
+               (format *standard-output* "accept thread ended~%")))
             sock)))
 
 (defun _handle-connection (sock)
   (unwind-protect
-   (let ((sock1 (usocket:socket-stream sock)))
-     (handshake sock1 sock1))
-   (progn
-    (format *standard-output* "close in socket ~%")
-    (usocket:socket-close sock))))
+       (let ((sock1 (usocket:socket-stream sock)))
+         (handshake sock1 sock1))
+    (progn
+      (format *standard-output* "close in socket ~%")
+      (usocket:socket-close sock))))
 
 (defun handle-connection (sock)
   (bt:make-thread (lambda ()
                     (_handle-connection sock))))
 
 (defun accept-connection (sock)
-  (loop for sock1 = (usocket:socket-accept sock :element-type '(unsigned-byte 8))
+  (loop for sock1 = (usocket:socket-accept sock
+                                           :element-type '(unsigned-byte 8))
         while sock1
         do (handle-connection sock1)))
-;)   ; end eval-when
+;;)   ; end eval-when
